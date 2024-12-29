@@ -1,0 +1,64 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "Build esp32c3_supermini-uart0 with in-tree esp32_supermini board",
+            "type": "shell",
+            "command": "source ~/zephyrproject/.venv/bin/activate && source ~/zephyrproject/zephyr/zephyr-env.sh && west build -b esp32c3_supermini /home/arrel/gits/zephyr-projects/esp32c3_supermini-uart0 -p auto",
+            "group": "build",
+            "problemMatcher": [
+                "$gcc"
+            ],
+            "detail": "Build task for esp32c3_supermini-uart0 with in-tree esp32_supermini board using west"
+        },
+        {
+            "type": "cppbuild",
+            "label": "C/C++: arm-zephyr-eabi-gcc build active file",
+            "command": "${env:ZEPHYR_SDK_INSTALL_DIR}/riscv64-zephyr-elf/bin/riscv64-zephyr-elf-gcc",
+            "args": [
+                "-fdiagnostics-color=always",
+                "-g",
+                "${file}",
+                "-o",
+                "${fileDirname}/${fileBasenameNoExtension}"
+            ],
+            "options": {
+                "cwd": "${fileDirname}"
+            },
+            "problemMatcher": [
+                "$gcc"
+            ],
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            }
+        },
+        {
+            "label": "Start OpenOCD esp32c3_supermini Debug",
+            "type": "shell",
+            "command": "/usr/local/bin/openocd",
+            "args": [
+                "-f",
+                "interface/esp_usb_jtag.cfg",
+                "-f",
+                "target/esp32c3.cfg"
+            ],
+            "isBackground": true,
+            "problemMatcher": {
+                "pattern": {
+                    "regexp": "^.*Error:(.*)$",
+                    "message": 1
+                },
+                "background": {
+                    "activeOnStart": true,
+                    "beginsPattern": "^Info : Listening on port \\d+ for gdb connections",
+                    "endsPattern": "^Info : accepting 'gdb' connection on tcp/3333$"
+                }
+            },
+            "presentation": {
+                "reveal": "always",
+                "panel": "new"
+            }
+        }
+    ]
+}
