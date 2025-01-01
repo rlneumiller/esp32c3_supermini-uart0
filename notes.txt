@@ -1,0 +1,2 @@
+west build -b esp32c3_supermini /home/arrel/gits/zephyr-projects/esp32c3_supermini-uart0 -p auto
+west flash
