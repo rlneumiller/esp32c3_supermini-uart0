@@ -13,13 +13,11 @@ static const struct gpio_dt_spec led = GPIO_DT_SPEC_GET(LED0_NODE, gpios);
 
 // Timing constants in milliseconds
 #define HEARTBEAT_PULSE 100
-#define BETWEEN_BEATS   700
-#define NUM_BEATS       10
+#define CYCLE_TIME      1000 // Total cycle time 1 second
 
 void led_thread_proc(void)
 {
 	printf("Entering LED thread proc\n");
-
 	int ret;
 
 	if (!gpio_is_ready_dt(&led)) {
@@ -34,19 +32,31 @@ void led_thread_proc(void)
 	}
 
 	while (1) {
+		uint32_t start_time = k_uptime_get_32();
+		uint32_t next_time = start_time;
+
 		// First beat
 		gpio_pin_set_dt(&led, 1);
-		k_sleep(K_MSEC(HEARTBEAT_PULSE));
+		next_time += HEARTBEAT_PULSE;
+		k_sleep(K_TIMEOUT_ABS_MS(next_time));
+
 		gpio_pin_set_dt(&led, 0);
-		k_sleep(K_MSEC(HEARTBEAT_PULSE));
+		next_time += HEARTBEAT_PULSE;
+		k_sleep(K_TIMEOUT_ABS_MS(next_time));
 
 		// Second beat
 		gpio_pin_set_dt(&led, 1);
-		k_sleep(K_MSEC(HEARTBEAT_PULSE));
-		gpio_pin_set_dt(&led, 0);
+		next_time += HEARTBEAT_PULSE;
+		k_sleep(K_TIMEOUT_ABS_MS(next_time));
 
-		// Pause between beats
-		k_sleep(K_MSEC(BETWEEN_BEATS));
+		gpio_pin_set_dt(&led, 0);
+		next_time += HEARTBEAT_PULSE;
+		k_sleep(K_TIMEOUT_ABS_MS(next_time));
+
+		// Wait remainder of cycle
+		next_time = start_time + CYCLE_TIME;
+		k_sleep(K_TIMEOUT_ABS_MS(next_time));
+		printf("Total cycle: %dms\n\n", k_uptime_get_32() - start_time);
 	}
 }
 
