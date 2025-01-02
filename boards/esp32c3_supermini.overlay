@@ -38,6 +38,11 @@
     status = "disabled";
 };
 
+/*
+*   9600: Use horizontal timebase   1 ms to view\decode with oscilloscope
+* 115200: Use horizontal timebase 100 µs to view\decode with oscilloscope
+* 921600: Use horizontal timebase 10 µs to view\decode with oscilloscope
+*/
 &uart0 {
 	status = "okay";
 	current-speed = <115200>;
