@@ -12,7 +12,7 @@ static const char *test_str = "This is a test string sent over uart.\n";
 #define RING_BUF_SIZE 2048
 RING_BUF_DECLARE(tx_ring_buf, RING_BUF_SIZE);
 
-static void uart_cb(const struct device *dev, void *user_data)
+static void uart_callback(const struct device *dev, void *user_data)
 {
 	uint8_t c;
 	if (ring_buf_get(&tx_ring_buf, &c, 1) > 0) {
@@ -22,11 +22,19 @@ static void uart_cb(const struct device *dev, void *user_data)
 	}
 }
 
-void send_gcode(const char *cmd)
+void send_serial(const char *cmd)
 {
 	size_t len = strlen(cmd);
 	ring_buf_put(&tx_ring_buf, cmd, len);
 	uart_irq_tx_enable(uart_dev);
+}
+
+void receive_serial()
+{
+	uint8_t c;
+	while (uart_poll_in(uart_dev, &c) == 0) {
+		printk("%c", c);
+	}
 }
 
 int main(void)
@@ -36,7 +44,7 @@ int main(void)
 		return -1;
 	}
 
-	uart_irq_callback_set(uart_dev, uart_cb);
+	uart_irq_callback_set(uart_dev, uart_callback);
 	uart_irq_tx_enable(uart_dev);
 
 	while (1) {
@@ -44,10 +52,12 @@ int main(void)
 		// 	uart_poll_out(uart_dev, test_str[i]);
 		// }
 
-		send_gcode("G1 X100 F6000\n");
-		printf("Sent gcode G1 X100 F6000\n");
+		send_serial("G1 X100 F6000\n");
+		// printf("Sent gcode G1 X100 F6000\n");
 
 		k_msleep(500);
+
+		receive_serial();
 	}
 	return 0;
 }
